@@ -29,7 +29,7 @@ public class WebServer {
             public void run() {
                 try {
                     server = new ServerSocket(portNumber);
-                    System.out.println("socket created");
+                    
                     while(true) {
                         
                         Socket client = server.accept();
@@ -39,7 +39,7 @@ public class WebServer {
                         while(client.isConnected()) {
                             if(in.available() > 0) {
                                 clientMessage += (char) in.read();
-                                if(clientMessage.endsWith("\n\n")) {
+                                if(clientMessage.endsWith("\r")) {
                                     break;
                                 }
                             }
