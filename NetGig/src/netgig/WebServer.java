@@ -63,7 +63,7 @@ public class WebServer {
                             
                             while(getValues.length() != 0) {
                                 
-                                String key = getValues.substring(0, 
+                                String key = getValues.substring(1, 
                                         getValues.indexOf("="));
                                 String value = "";
                                 if(getValues.contains("&")) {
