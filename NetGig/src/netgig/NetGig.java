@@ -15,5 +15,6 @@ public class NetGig {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        new WebServer(80).start();
     }
 }
