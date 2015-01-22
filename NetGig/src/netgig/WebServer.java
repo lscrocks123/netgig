@@ -51,7 +51,7 @@ public class WebServer {
                         path = clientMessage
                                 .substring(clientMessage.indexOf(" ") + 1);
                         if(path.contains("?")) {
-                            getValues = path.substring(path.indexOf("?"), path.indexOf(" "));
+                            getValues = path.substring(path.indexOf("?")+1, path.indexOf(" "));
                             path = path.substring(0, path.indexOf("?"));
                         } else {
                             path = path.substring(0, path.indexOf(" "));
@@ -63,8 +63,9 @@ public class WebServer {
                             
                             while(getValues.length() != 0) {
                                 
-                                String key = getValues.substring(1, 
+                                String key = getValues.substring(0, 
                                         getValues.indexOf("="));
+                                
                                 String value = "";
                                 if(getValues.contains("&")) {
                                     value = getValues.substring( 
