@@ -35,6 +35,8 @@ public class WebServer {
                         Socket client = server.accept();
                         InputStream in = client.getInputStream();
                         String clientMessage = "";
+                        String path = "";
+                        String getValues = "";
                         
                         while(client.isConnected()) {
                             if(in.available() > 0) {
@@ -46,8 +48,46 @@ public class WebServer {
                         }
                         
                         clientMessage = clientMessage.trim();
+                        path = clientMessage
+                                .substring(clientMessage.indexOf(" ") + 1);
+                        if(path.contains("?")) {
+                            getValues = path.substring(path.indexOf("?"), path.indexOf(" "));
+                            path = path.substring(0, path.indexOf("?"));
+                        } else {
+                            path = path.substring(0, path.indexOf(" "));
+                        }
                         
                         if(clientMessage.startsWith("GET")) {
+                            
+                            Map<String,String> values = new HashMap();
+                            
+                            while(getValues.length() != 0) {
+                                
+                                String key = getValues.substring(0, 
+                                        getValues.indexOf("="));
+                                String value = "";
+                                if(getValues.contains("&")) {
+                                    value = getValues.substring( 
+                                        getValues.indexOf("=")+1,
+                                        getValues.indexOf("&"));
+                                    getValues = getValues.substring(
+                                            getValues.indexOf("&")+1);
+                                } else {
+                                    value = getValues.substring( 
+                                        getValues.indexOf("=")+1);
+                                    getValues = "";
+                                }
+                                
+                                values.put(key, value);
+                                
+                            }
+                            
+                            for(String k : values.keySet()) {
+                                System.out.println("Key: \"" + k + "\"");
+                                System.out.println("Value: \"" 
+                                        + values.get(k) + "\"");
+
+                            }
                             
                         } else if(clientMessage.startsWith("POST")) {
                             
