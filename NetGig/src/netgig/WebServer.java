@@ -4,6 +4,7 @@
  */
 package netgig;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.util.HashMap;
@@ -20,91 +21,173 @@ public class WebServer {
     private ServerSocket server;
     private Map<String, PageListener> listeners = new HashMap();
     private boolean running = false;
+    private final int defaultTimeout = 100;
 
     public WebServer(int portNumber) {
         this.portNumber = portNumber;
     }
     
+    private void getValues(String s, Map<String, String> values) throws ClientException {
+        
+        String key = "";
+        String value = "";
+        boolean onKey = true;
+        
+        for(int i = 0; i < s.length(); i++) {
+            switch(s.charAt(i)) {
+                case '=':
+                    onKey = false;
+                    break;
+                case ' ':
+                    values.put(key, value);
+                    return;
+                case '&':
+                    values.put(key, value);
+                    key = "";
+                    value = "";
+                    onKey = true;
+                    break;
+                default:
+                    if(onKey)   key += s.charAt(i);
+                    else        value += s.charAt(i);
+            }
+        }
+        
+        throw new ClientException("getValues parse error");
+        
+    }
+    
+    private METHOD getMethod(String requestLine) throws ClientException {
+        
+        if(requestLine.startsWith("GET ")) {
+            return METHOD.GET;
+        } else if(requestLine.startsWith("POST ")) {
+            return METHOD.POST;
+        } else {
+            throw new ClientException("getMethod unknown/absent request method");
+        }
+        
+    }
+    
+    private String getPath(String requestLine) throws ClientException {
+        
+        int i = requestLine.indexOf(" ");
+        int j = requestLine.lastIndexOf(" ");
+        
+        if(i != j) {
+            
+            String path = requestLine.substring(i+1, j);
+            if(path.contains("?")) {
+                path = path.substring(0, path.indexOf("?"));
+            }
+            
+            for(i = 0; i < path.length(); i++) {
+                if(Character.isLetterOrDigit(path.charAt(i)) 
+                        || path.charAt(i) == '/'
+                        || path.charAt(i) == '.') continue;
+                throw new ClientException("getPath invalid path");
+            }
+            
+            if(path.contains(".") && path.indexOf(".") < path.lastIndexOf("/")) {
+                throw new ClientException("getPath invalid path");
+            }
+            
+            while(path.contains("//")) {
+                path = path.substring(0, path.indexOf("//")) +
+                        path.substring(path.indexOf("//") + 1);
+            }
+            
+            while(path.contains("..")) {
+                path = path.substring(0, path.indexOf("..")) +
+                        path.substring(path.indexOf("..") + 1);
+            }
+            
+            while(path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            
+            return path;
+            
+        } else {
+            throw new ClientException("getPath absent path");
+        }
+        
+    }
+    
+    private String readLine(Socket client) throws ClientException {
+        
+        String s = "";
+        char c;
+        
+        while(true) {
+            c = readChar(client);
+            if(c == '\n') return s;
+            s += c;
+        }
+        
+    }
+    
+    private char readChar(Socket client) throws ClientException {
+        
+        int timeout = defaultTimeout;
+        
+        while(client.isConnected() && timeout-- > 0) {
+                
+                try {
+                    
+                    if(client.getInputStream().available() > 0) {
+                        return (char) client.getInputStream().read();
+                    }
+                    
+                    Thread.sleep(10);
+                    
+                } catch(InterruptedException e) {
+                    throw new ClientException("readChar thread issue");
+                } catch(IOException e) {
+                    throw new ClientException("readChar io issue");
+                }
+        }
+        
+        throw new ClientException("readChar client timeout");
+    }
+    
     private void processRequest(Socket client) {
         try {
-            InputStream in = client.getInputStream();
-            String clientHeader = "";
-            String path = "";
-            String getValues = "";
-            String clientBody = "";
+            String header = readLine(client);
             
-            boolean onHead = true;
-            while(client.isConnected()) {
-                if(in.available() > 0) {
-                    if(onHead) {
-                        clientHeader += (char) in.read();
-                        if(clientHeader.endsWith("\r")) {
-                            onHead = false;
-                        }
-                    } else {
-                        clientBody += (char) in.read();
-                        if(clientBody.endsWith("\n")) {
-                            break;
-                        }
+            Map<String, String> values = new HashMap();
+            Map<String, String> request = new HashMap();
+            String path = getPath(header);
+            
+            if(!listeners.containsKey(path)) {
+                client.close();
+                throw new ClientException("404: File Not Found");
+            }
+            
+            switch(getMethod(header)) {
+                case GET:
+                    if(header.contains("?")) {
+                        getValues(header.substring(header.lastIndexOf("?")+1), values);
                     }
-                }
+                    System.out.println("METHOD: GET");
+                    break;
+                case POST:
+                    System.out.println("METHOD: POST");
+                    break;
             }
-
-            clientHeader = clientHeader.trim();
-            path = clientHeader
-                    .substring(clientHeader.indexOf(" ") + 1);
-            if(path.contains("?")) {
-                getValues = path.substring(path.indexOf("?")+1, path.indexOf(" "));
-                path = path.substring(0, path.indexOf("?"));
-            } else {
-                path = path.substring(0, path.indexOf(" "));
+            
+            System.out.println("PATH: \"" + path + "\"");
+            System.out.println("HEADER: \"" + header + "\"");
+            
+            for(String key : values.keySet()) {
+                System.out.println("\"" + key + "\" = \"" + values.get(key) + "\"");
             }
-
-            if(clientHeader.startsWith("GET")) {
-
-                Map<String,String> values = new HashMap();
-
-                while(getValues.length() != 0) {
-
-                    String key = getValues.substring(0, 
-                            getValues.indexOf("="));
-
-                    String value = "";
-                    if(getValues.contains("&")) {
-                        value = getValues.substring( 
-                            getValues.indexOf("=")+1,
-                            getValues.indexOf("&"));
-                        getValues = getValues.substring(
-                                getValues.indexOf("&")+1);
-                    } else {
-                        value = getValues.substring( 
-                            getValues.indexOf("=")+1);
-                        getValues = "";
-                    }
-
-                    values.put(key, value);
-
-                }
-
-                for(String k : values.keySet()) {
-                    System.out.println("Key: \"" + k + "\"");
-                    System.out.println("Value: \"" 
-                            + values.get(k) + "\"");
-
-                }
-
-            } else if(clientHeader.startsWith("POST")) {
-                
-            } else {
-                
-            }
-
-            System.out.println("|" + clientHeader + "|");
-            System.out.println("|" + clientBody + "|");
-            in.close();
+            
             client.close();
-        } catch(Exception e) {
+        } catch(ClientException e) {
             System.err.println("Client Error: " + e);
+        } catch(IOException e) {
+            System.err.println("Connection Error: " + e);
         }
     }
     
