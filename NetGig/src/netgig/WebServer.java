@@ -19,87 +19,103 @@ public class WebServer {
     private int portNumber;
     private ServerSocket server;
     private Map<String, PageListener> listeners = new HashMap();
+    private boolean running = false;
 
     public WebServer(int portNumber) {
         this.portNumber = portNumber;
     }
     
+    private void processRequest(Socket client) {
+        try {
+            InputStream in = client.getInputStream();
+            String clientMessage = "";
+            String path = "";
+            String getValues = "";
+
+            while(client.isConnected()) {
+                if(in.available() > 0) {
+                    clientMessage += (char) in.read();
+                    if(clientMessage.endsWith("\n\r")) {
+                        break;
+                    }
+                }
+            }
+
+            clientMessage = clientMessage.trim();
+            path = clientMessage
+                    .substring(clientMessage.indexOf(" ") + 1);
+            if(path.contains("?")) {
+                getValues = path.substring(path.indexOf("?")+1, path.indexOf(" "));
+                path = path.substring(0, path.indexOf("?"));
+            } else {
+                path = path.substring(0, path.indexOf(" "));
+            }
+
+            if(clientMessage.startsWith("GET")) {
+
+                Map<String,String> values = new HashMap();
+
+                while(getValues.length() != 0) {
+
+                    String key = getValues.substring(0, 
+                            getValues.indexOf("="));
+
+                    String value = "";
+                    if(getValues.contains("&")) {
+                        value = getValues.substring( 
+                            getValues.indexOf("=")+1,
+                            getValues.indexOf("&"));
+                        getValues = getValues.substring(
+                                getValues.indexOf("&")+1);
+                    } else {
+                        value = getValues.substring( 
+                            getValues.indexOf("=")+1);
+                        getValues = "";
+                    }
+
+                    values.put(key, value);
+
+                }
+
+                for(String k : values.keySet()) {
+                    System.out.println("Key: \"" + k + "\"");
+                    System.out.println("Value: \"" 
+                            + values.get(k) + "\"");
+
+                }
+
+            } else if(clientMessage.startsWith("POST")) {
+                
+            } else {
+                
+            }
+
+            System.out.println("|" + clientMessage + "|");
+            in.close();
+            client.close();
+        } catch(Exception e) {
+            System.err.println("Client Error: " + e);
+        }
+    }
+    
     public void start() {
+        running = true;
+        
         Thread t = new Thread() {
             public void run() {
                 try {
+                    
                     server = new ServerSocket(portNumber);
                     
-                    while(true) {
+                    while(running) {
+                        final Socket client = server.accept();
                         
-                        Socket client = server.accept();
-                        InputStream in = client.getInputStream();
-                        String clientMessage = "";
-                        String path = "";
-                        String getValues = "";
-                        
-                        while(client.isConnected()) {
-                            if(in.available() > 0) {
-                                clientMessage += (char) in.read();
-                                if(clientMessage.endsWith("\r")) {
-                                    break;
-                                }
+                        Thread clientThread = new Thread() {
+                            public void run() {
+                                processRequest(client);
                             }
-                        }
-                        
-                        clientMessage = clientMessage.trim();
-                        path = clientMessage
-                                .substring(clientMessage.indexOf(" ") + 1);
-                        if(path.contains("?")) {
-                            getValues = path.substring(path.indexOf("?")+1, path.indexOf(" "));
-                            path = path.substring(0, path.indexOf("?"));
-                        } else {
-                            path = path.substring(0, path.indexOf(" "));
-                        }
-                        
-                        if(clientMessage.startsWith("GET")) {
-                            
-                            Map<String,String> values = new HashMap();
-                            
-                            while(getValues.length() != 0) {
-                                
-                                String key = getValues.substring(0, 
-                                        getValues.indexOf("="));
-                                
-                                String value = "";
-                                if(getValues.contains("&")) {
-                                    value = getValues.substring( 
-                                        getValues.indexOf("=")+1,
-                                        getValues.indexOf("&"));
-                                    getValues = getValues.substring(
-                                            getValues.indexOf("&")+1);
-                                } else {
-                                    value = getValues.substring( 
-                                        getValues.indexOf("=")+1);
-                                    getValues = "";
-                                }
-                                
-                                values.put(key, value);
-                                
-                            }
-                            
-                            for(String k : values.keySet()) {
-                                System.out.println("Key: \"" + k + "\"");
-                                System.out.println("Value: \"" 
-                                        + values.get(k) + "\"");
-
-                            }
-                            
-                        } else if(clientMessage.startsWith("POST")) {
-                            
-                        } else {
-                            
-                        }
-                        
-                        System.out.println("|" + clientMessage + "|");
-                        in.close();
-                        client.close();
-                        
+                        };
+                        clientThread.start();
                     }
                     
                 } catch(Exception e) {
@@ -116,6 +132,10 @@ public class WebServer {
             listeners.remove(path);
         }
         listeners.put(path, listener);
+    }
+    
+    public void stop() {
+        running = false;
     }
     
 }
