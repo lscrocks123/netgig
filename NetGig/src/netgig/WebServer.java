@@ -28,22 +28,31 @@ public class WebServer {
     private void processRequest(Socket client) {
         try {
             InputStream in = client.getInputStream();
-            String clientMessage = "";
+            String clientHeader = "";
             String path = "";
             String getValues = "";
-
+            String clientBody = "";
+            
+            boolean onHead = true;
             while(client.isConnected()) {
                 if(in.available() > 0) {
-                    clientMessage += (char) in.read();
-                    if(clientMessage.endsWith("\n\r")) {
-                        break;
+                    if(onHead) {
+                        clientHeader += (char) in.read();
+                        if(clientHeader.endsWith("\n\r")) {
+                            onHead = false;
+                        }
+                    } else {
+                        clientBody += (char) in.read();
+                        if(clientBody.endsWith("\n\r")) {
+                            break;
+                        }
                     }
                 }
             }
 
-            clientMessage = clientMessage.trim();
-            path = clientMessage
-                    .substring(clientMessage.indexOf(" ") + 1);
+            clientHeader = clientHeader.trim();
+            path = clientHeader
+                    .substring(clientHeader.indexOf(" ") + 1);
             if(path.contains("?")) {
                 getValues = path.substring(path.indexOf("?")+1, path.indexOf(" "));
                 path = path.substring(0, path.indexOf("?"));
@@ -51,7 +60,7 @@ public class WebServer {
                 path = path.substring(0, path.indexOf(" "));
             }
 
-            if(clientMessage.startsWith("GET")) {
+            if(clientHeader.startsWith("GET")) {
 
                 Map<String,String> values = new HashMap();
 
@@ -84,13 +93,14 @@ public class WebServer {
 
                 }
 
-            } else if(clientMessage.startsWith("POST")) {
+            } else if(clientHeader.startsWith("POST")) {
                 
             } else {
                 
             }
 
-            System.out.println("|" + clientMessage + "|");
+            System.out.println("|" + clientHeader + "|");
+            System.out.println("|" + clientBody + "|");
             in.close();
             client.close();
         } catch(Exception e) {
