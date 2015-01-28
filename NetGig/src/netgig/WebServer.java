@@ -43,7 +43,7 @@ public class WebServer {
                         }
                     } else {
                         clientBody += (char) in.read();
-                        if(clientBody.endsWith("\n\r")) {
+                        if(clientBody.endsWith("\r")) {
                             break;
                         }
                     }
