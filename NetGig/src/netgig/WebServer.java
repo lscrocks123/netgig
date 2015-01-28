@@ -160,8 +160,8 @@ public class WebServer {
             String path = getPath(header);
             
             if(!listeners.containsKey(path)) {
-                client.close();
-                throw new ClientException("404: File Not Found");
+                //client.close();
+                //throw new ClientException("404: File Not Found");
             }
             
             switch(getMethod(header)) {
