@@ -121,7 +121,7 @@ public class WebServer {
         
         while(true) {
             c = readChar(client);
-            if(c == '\n') return s;
+            if(c == '\n' || c == '\r') return s;
             s += c;
         }
         
