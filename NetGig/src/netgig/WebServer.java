@@ -38,12 +38,12 @@ public class WebServer {
                 if(in.available() > 0) {
                     if(onHead) {
                         clientHeader += (char) in.read();
-                        if(clientHeader.endsWith("\n\r")) {
+                        if(clientHeader.endsWith("\r")) {
                             onHead = false;
                         }
                     } else {
                         clientBody += (char) in.read();
-                        if(clientBody.endsWith("\r")) {
+                        if(clientBody.endsWith("\n")) {
                             break;
                         }
                     }
