@@ -181,11 +181,8 @@ public class WebServer {
                 if(line.contains(":")) {
                     key = line.substring(0, line.indexOf(":"));
                     value = line.substring(line.indexOf(":") + 1);
-                    key = key.trim();
-                    value = value.trim();
-                    if(value == null) {
-                        value = readLine(client);
-                    }
+                    //key = key.trim();
+                    //value = value.trim();
                     header.put(key, value);
                 }
             }
