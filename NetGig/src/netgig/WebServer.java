@@ -217,6 +217,9 @@ public class WebServer {
                     System.out.println("METHOD: POST");
                     parseHeaderFields(client, request);
                     readLine(client);
+                    readLine(client);
+                    readLine(client);
+                    readLine(client);
                     break;
             }
             
