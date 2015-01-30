@@ -21,7 +21,7 @@ public class WebServer {
     private ServerSocket server;
     private Map<String, PageListener> listeners = new HashMap();
     private boolean running = false;
-    private final int defaultTimeout = 100;
+    private final int defaultTimeout = 1000;
 
     public WebServer(int portNumber) {
         this.portNumber = portNumber;
@@ -155,8 +155,8 @@ public class WebServer {
                                                         throws ClientException {
         
         String line = "";
-        String key = "";
-        String value = "";
+        String key;
+        String value;
         
         while(true) {
             try {
@@ -172,6 +172,9 @@ public class WebServer {
                     value = line.substring(line.indexOf(":") + 1);
                     key = key.trim();
                     value = value.trim();
+                    if(value == null) {
+                        value = readLine(client);
+                    }
                     header.put(key, value);
                 }
             }
