@@ -161,7 +161,7 @@ public class WebServer {
         String key;
         String value;
         
-        boolean flag = true;
+        int blankCount = 0;
         
         while(true) {
             try {
@@ -170,14 +170,14 @@ public class WebServer {
                 throw new ClientException("parseHeaderFields read error");
             }
             if(line.length() == 0) {
-                if(flag) {
-                    flag = false;
+
+                if(++blankCount > 2) {
                     continue;
                 } else {
                     break;
                 }
+                
             } else {
-                flag = false;
                 if(line.contains(":")) {
                     key = line.substring(0, line.indexOf(":"));
                     value = line.substring(line.indexOf(":") + 1);
