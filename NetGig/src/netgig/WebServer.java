@@ -121,7 +121,10 @@ public class WebServer {
         
         while(true) {
             c = readChar(client);
-            if(c == '\n' || c == '\r') return s;
+            if(c == '\n' || c == '\r') {
+                System.out.println("Read Line :\"" + s + "\"");
+                return s;
+            }
             s += c;
         }
         
@@ -158,6 +161,8 @@ public class WebServer {
         String key;
         String value;
         
+        boolean flag = true;
+        
         while(true) {
             try {
                 line = readLine(client);
@@ -165,8 +170,14 @@ public class WebServer {
                 throw new ClientException("parseHeaderFields read error");
             }
             if(line.length() == 0) {
-                break;
+                if(flag) {
+                    flag = false;
+                    continue;
+                } else {
+                    break;
+                }
             } else {
+                flag = false;
                 if(line.contains(":")) {
                     key = line.substring(0, line.indexOf(":"));
                     value = line.substring(line.indexOf(":") + 1);
@@ -185,7 +196,6 @@ public class WebServer {
     private void processRequest(Socket client) {
         try {
             String header = readLine(client);
-            readLine(client);
             
             Map<String, String> values = new HashMap();
             Map<String, String> request = new HashMap();
