@@ -161,7 +161,7 @@ public class WebServer {
         String key;
         String value;
         
-        int blankCount = 0;
+        boolean lastWasBlank = false;
         
         while(true) {
             try {
@@ -171,13 +171,15 @@ public class WebServer {
             }
             if(line.length() == 0) {
 
-                if(++blankCount > 2) {
+                if(lastWasBlank) {
                     break;
                 } else {
+                    lastWasBlank = true;
                     continue;
                 }
                 
             } else {
+                lastWasBlank = false;
                 if(line.contains(":")) {
                     key = line.substring(0, line.indexOf(":"));
                     value = line.substring(line.indexOf(":") + 1);
