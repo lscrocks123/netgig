@@ -172,9 +172,9 @@ public class WebServer {
             if(line.length() == 0) {
 
                 if(++blankCount > 2) {
-                    continue;
-                } else {
                     break;
+                } else {
+                    continue;
                 }
                 
             } else {
