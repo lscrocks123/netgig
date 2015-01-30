@@ -151,6 +151,34 @@ public class WebServer {
         throw new ClientException("readChar client timeout");
     }
     
+    private void parseHeaderFields(Socket client, Map<String, String> header) 
+                                                        throws ClientException {
+        
+        String line = "";
+        String key = "";
+        String value = "";
+        
+        while(true) {
+            try {
+                line = readLine(client);
+            } catch(ClientException e) {
+                throw new ClientException("parseHeaderFields read error");
+            }
+            if(line.length() == 0) {
+                break;
+            } else {
+                if(line.contains(":")) {
+                    key = line.substring(0, line.indexOf(":"));
+                    value = line.substring(line.indexOf(":") + 1);
+                    key = key.trim();
+                    value = value.trim();
+                    header.put(key, value);
+                }
+            }
+        }
+        
+    }
+    
     private void processRequest(Socket client) {
         try {
             String header = readLine(client);
@@ -170,9 +198,11 @@ public class WebServer {
                         getValues(header.substring(header.lastIndexOf("?")+1), values);
                     }
                     System.out.println("METHOD: GET");
+                    parseHeaderFields(client, request);
                     break;
                 case POST:
                     System.out.println("METHOD: POST");
+                    parseHeaderFields(client, request);
                     break;
             }
             
@@ -181,6 +211,10 @@ public class WebServer {
             
             for(String key : values.keySet()) {
                 System.out.println("\"" + key + "\" = \"" + values.get(key) + "\"");
+            }
+            
+            for(String key : request.keySet()) {
+                System.out.println(key + ": " + values.get(key));
             }
             
             client.close();
