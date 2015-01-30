@@ -216,6 +216,10 @@ public class WebServer {
                 case POST:
                     System.out.println("METHOD: POST");
                     parseHeaderFields(client, request);
+                    String reply = "HTTP/1.1 200 OK\n\n\n\n";
+                    client.getOutputStream().write(reply.getBytes());
+                    readLine(client);
+                    readLine(client);
                     readLine(client);
                     readLine(client);
                     readLine(client);
