@@ -212,12 +212,14 @@ public class WebServer {
                     }
                     System.out.println("METHOD: GET");
                     parseHeaderFields(client, request);
+                    String reply = "HTTP1.1 200 OK\n\r<h1>hi client!</h1>\n\n";
+                    client.getOutputStream().write(reply.getBytes());
                     break;
                 case POST:
                     System.out.println("METHOD: POST");
                     parseHeaderFields(client, request);
-                    String reply = "HTTP/1.1 200 OK\n\n\n\n";
-                    client.getOutputStream().write(reply.getBytes());
+                    //String reply = "HTTP/1.1 200 OK";
+                    //client.getOutputStream().write(reply.getBytes());
                     readLine(client);
                     readLine(client);
                     readLine(client);
