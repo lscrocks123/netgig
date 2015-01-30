@@ -158,8 +158,8 @@ public class WebServer {
                                                         throws ClientException {
         
         String line = "";
-        String key = "(default key)";
-        String value = "(default value)";
+        String key;
+        String value;
         
         boolean flag = true;
         
@@ -225,7 +225,7 @@ public class WebServer {
             }
             
             for(String key : request.keySet()) {
-                System.out.println(key + ": " + values.get(key));
+                System.out.println(key + ": " + request.get(key));
             }
             
             client.close();
