@@ -122,7 +122,7 @@ public class WebServer {
         while(true) {
             c = readChar(client);
             if(c == '\n' || c == '\r') {
-                System.out.println("Read Line :\"" + s + "\"");
+                System.out.println("Read Line: \"" + s + "\"");
                 return s;
             }
             s += c;
@@ -158,8 +158,8 @@ public class WebServer {
                                                         throws ClientException {
         
         String line = "";
-        String key;
-        String value;
+        String key = "(default key)";
+        String value = "(default value)";
         
         boolean flag = true;
         
@@ -181,8 +181,8 @@ public class WebServer {
                 if(line.contains(":")) {
                     key = line.substring(0, line.indexOf(":"));
                     value = line.substring(line.indexOf(":") + 1);
-                    //key = key.trim();
-                    //value = value.trim();
+                    key = key.trim();
+                    value = value.trim();
                     header.put(key, value);
                 }
             }
