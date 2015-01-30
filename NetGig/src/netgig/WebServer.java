@@ -182,6 +182,7 @@ public class WebServer {
     private void processRequest(Socket client) {
         try {
             String header = readLine(client);
+            readLine(client);
             
             Map<String, String> values = new HashMap();
             Map<String, String> request = new HashMap();
@@ -239,7 +240,9 @@ public class WebServer {
                         
                         Thread clientThread = new Thread() {
                             public void run() {
+                                System.out.println("Client Started");
                                 processRequest(client);
+                                System.out.println("Client Stopped");
                             }
                         };
                         clientThread.start();
