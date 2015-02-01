@@ -222,14 +222,17 @@ public class WebServer {
                     out.print("\r\n");
                     in.close();
                     out.flush();
+                    try {
+                        Thread.sleep(1000);
+                    } catch(InterruptedException e) {
+                        System.err.println("client wait sleep error");
+                    }
                     out.close();
                     client.close();
                     break;
                 case POST:
                     System.out.println("METHOD: POST");
                     parseHeaderFields(client, request);
-                    //String reply = "HTTP/1.1 200 OK";
-                    //client.getOutputStream().write(reply.getBytes());
                     readLine(client);
                     readLine(client);
                     readLine(client);
