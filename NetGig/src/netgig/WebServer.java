@@ -213,7 +213,7 @@ public class WebServer {
                     }
                     System.out.println("METHOD: GET");
                     parseHeaderFields(client, request);
-                    Scanner in = new Scanner(new File("reply.html"));
+                    Scanner in = new Scanner(new File("$HOME/html/reply.html"));
                     while(in.hasNextByte()) {
                         client.getOutputStream().write(in.nextByte());
                     }
