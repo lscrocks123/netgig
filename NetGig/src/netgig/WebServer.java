@@ -229,6 +229,7 @@ public class WebServer {
                         out.println(in.nextLine());
                     }
                     in.close();
+                    out.flush();
                     out.close();
                     client.close();
                     break;
