@@ -223,7 +223,7 @@ public class WebServer {
                     String response2 = "\nConnection: close\r\n";
                     String response3 = "";
                     String temp = "";
-                    int contentLength = 0;
+                    int contentLength = 2;
                     while(in.hasNextLine()) {
                         temp = in.nextLine();
                         contentLength += temp.length();
