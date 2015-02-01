@@ -4,12 +4,13 @@
  */
 package netgig;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  *
@@ -212,8 +213,12 @@ public class WebServer {
                     }
                     System.out.println("METHOD: GET");
                     parseHeaderFields(client, request);
-                    String reply = "HTTP1.1 200 OK\nContent Length: 21\n<h1>hi client!</h1>\n\n";
-                    client.getOutputStream().write(reply.getBytes());
+                    Scanner in = new Scanner(new File("reply.html"));
+                    while(in.hasNextByte()) {
+                        client.getOutputStream().write(in.nextByte());
+                    }
+                    in.close();
+                    client.close();
                     break;
                 case POST:
                     System.out.println("METHOD: POST");
