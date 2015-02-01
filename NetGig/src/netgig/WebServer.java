@@ -216,9 +216,20 @@ public class WebServer {
                     parseHeaderFields(client, request);
                     Scanner in = new Scanner(new File("/home/pi/html/reply.html"));
                     PrintStream out = new PrintStream(client.getOutputStream());
+                    String response1 = "HTTP/1.1 200 OK\n" +
+                                        "Server: NetGig Custom\n" +
+                                        "Content-Type: text/html; charset=utf-8\n" +
+                                        "Content-Length: ";
+                    String response2 = "\nConnection: close\r\n";
+                    String response3 = "";
+                    String temp = "";
+                    int contentLength = 0;
                     while(in.hasNextLine()) {
-                        out.println(in.nextLine());
+                        temp = in.nextLine();
+                        contentLength += temp.length();
+                        response3 += temp;
                     }
+                    out.print(response1 + contentLength + response2 + response3);
                     out.print("\r\n");
                     in.close();
                     out.flush();
