@@ -213,6 +213,15 @@ public class WebServer {
                     }
                     System.out.println("METHOD: GET");
                     parseHeaderFields(client, request);
+                    while(client.isConnected()) {
+                        while(client.getInputStream().available() != 0) {
+                            try {
+                                client.getInputStream().read();
+                            } catch(Exception e) {
+                                System.err.println("client read error!!!");
+                            }
+                        }
+                    }
                     Scanner in = new Scanner(new File("/home/pi/html/reply.html"));
                     while(in.hasNextByte()) {
                         client.getOutputStream().write(in.nextByte());
