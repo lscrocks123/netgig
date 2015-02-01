@@ -124,7 +124,6 @@ public class WebServer {
         while(true) {
             c = readChar(client);
             if(c == '\n' || c == '\r') {
-                System.out.println("Read Line: \"" + s + "\"");
                 return s;
             }
             s += c;
