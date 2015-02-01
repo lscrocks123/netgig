@@ -220,7 +220,7 @@ public class WebServer {
                                         "Server: NetGig Custom\n" +
                                         "Content-Type: text/html; charset=utf-8\n" +
                                         "Content-Length: ";
-                    String response2 = "\nConnection: close\r\n";
+                    String response2 = "\nConnection: close\n";
                     String response3 = "";
                     String temp = "";
                     int contentLength = 2;
