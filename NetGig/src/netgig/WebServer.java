@@ -220,17 +220,16 @@ public class WebServer {
                                         "Server: NetGig Custom\n" +
                                         "Content-Type: text/html; charset=utf-8\n" +
                                         "Content-Length: ";
-                    String response2 = "\nConnection: close\n";
+                    String response2 = "\nConnection: close\r\n";
                     String response3 = "";
                     String temp = "";
-                    int contentLength = 2;
+                    int contentLength = 0;
                     while(in.hasNextLine()) {
                         temp = in.nextLine();
                         contentLength += temp.length();
                         response3 += temp;
                     }
                     out.print(response1 + contentLength + response2 + response3);
-                    out.print("\r\n");
                     in.close();
                     out.flush();
                     try {
