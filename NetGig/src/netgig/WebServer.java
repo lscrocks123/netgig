@@ -6,6 +6,7 @@ package netgig;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
@@ -223,10 +224,12 @@ public class WebServer {
                         }
                     }
                     Scanner in = new Scanner(new File("/home/pi/html/reply.html"));
-                    while(in.hasNextByte()) {
-                        client.getOutputStream().write(in.nextByte());
+                    PrintStream out = new PrintStream(client.getOutputStream());
+                    while(in.hasNextLine()) {
+                        out.println(in.nextLine());
                     }
                     in.close();
+                    out.close();
                     client.close();
                     break;
                 case POST:
