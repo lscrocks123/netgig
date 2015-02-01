@@ -12,7 +12,7 @@ import java.util.Map;
  */
 
 public interface PageListener {
-    
+
     public String getHTML(Map<String,String> values, METHOD method);
-    
+
 }
