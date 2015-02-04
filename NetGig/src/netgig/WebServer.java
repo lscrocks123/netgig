@@ -24,6 +24,7 @@ public class WebServer {
     private Map<String, PageListener> listeners = new HashMap();
     private boolean running = false;
     private final int defaultTimeout = 1000;
+    public static String docRoot = "";
 
     public WebServer(int portNumber) {
         this.portNumber = portNumber;
@@ -37,6 +38,9 @@ public class WebServer {
         
         for(int i = 0; i < s.length(); i++) {
             switch(s.charAt(i)) {
+                case '+':
+                    if(onKey)   key += " ";
+                    else        value += " ";
                 case '=':
                     onKey = false;
                     break;
@@ -102,6 +106,10 @@ public class WebServer {
             while(path.contains("..")) {
                 path = path.substring(0, path.indexOf("..")) +
                         path.substring(path.indexOf("..") + 1);
+            }
+            
+            if(path.equals("/")) {
+                return "index.html";
             }
             
             while(path.startsWith("/")) {
@@ -200,69 +208,56 @@ public class WebServer {
             Map<String, String> values = new HashMap();
             Map<String, String> request = new HashMap();
             String path = getPath(header);
+            METHOD method = getMethod(header);
             
-            if(!listeners.containsKey(path)) {
-                //client.close();
-                //throw new ClientException("404: File Not Found");
-            }
-            
-            switch(getMethod(header)) {
+            switch(method) {
                 case GET:
                     if(header.contains("?")) {
                         getValues(header.substring(header.lastIndexOf("?")+1), values);
                     }
-                    System.out.println("METHOD: GET");
                     parseHeaderFields(client, request);
-                    Scanner in = new Scanner(new File("/home/pi/html/reply.html"));
-                    PrintStream out = new PrintStream(client.getOutputStream());
-                    String response1 = "HTTP/1.1 200 OK\n" +
-                                        "Server: NetGig Custom\n" +
-                                        "Content-Type: text/html; charset=utf-8\n" +
-                                        "Content-Length: ";
-                    String response2 = "\nConnection: close\n\n";
-                    String response3 = "";
-                    String temp = "";
-                    int contentLength = 0;
-                    while(in.hasNextLine()) {
-                        temp = in.nextLine();
-                        contentLength += temp.length();
-                        response3 += temp;
-                    }
-                    out.print(response1 + contentLength + response2 + response3);
-                    in.close();
-                    out.flush();
-                    try {
-                        Thread.sleep(1000);
-                    } catch(InterruptedException e) {
-                        System.err.println("client wait sleep error");
-                    }
-                    out.close();
-                    client.close();
                     break;
                 case POST:
-                    System.out.println("METHOD: POST");
                     parseHeaderFields(client, request);
-                    readLine(client);
-                    readLine(client);
-                    readLine(client);
-                    readLine(client);
-                    readLine(client);
-                    readLine(client);
                     break;
             }
             
-            System.out.println("PATH: \"" + path + "\"");
-            System.out.println("HEADER: \"" + header + "\"");
-            
             for(String key : values.keySet()) {
-                System.out.println("\"" + key + "\" = \"" + values.get(key) + "\"");
+                System.out.println(key + "=\"" + values.get(key) + "\"");
             }
             
-            for(String key : request.keySet()) {
-                System.out.println(key + ": " + request.get(key));
+            PrintStream out = new PrintStream(client.getOutputStream());
+            String response = "HTTP/1.1 200 OK\n" +
+                                "Server: NetGig Custom\n" +
+                                "Content-Type: text/html; charset=utf-8\n" +
+                                "Content-Length: ";
+            out.print(response);
+            
+            PageListener temp = listeners.get(path);
+            String html = "";
+            
+            if(temp == null) {
+                html = "<html><head><title>404: File Not Found</title>"
+                        + "</head><body><h1>404 Error: File Not Found</h1>"
+                        + "<h2>NetGig Server</h2></body></html>";
+            } else {
+                html = temp.getHTML(values, method);
             }
             
+            out.print(html.length());
+            out.print("\nConnection: close\n\n");
+            out.print(html);
+            out.flush();
+            
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException e) {
+                System.err.println("client wait sleep error");
+            }
+            
+            out.close();
             client.close();
+            
         } catch(ClientException e) {
             System.err.println("Client Error: " + e);
         } catch(IOException e) {
@@ -271,6 +266,7 @@ public class WebServer {
     }
     
     public void start() {
+        
         running = true;
         
         Thread t = new Thread() {
@@ -284,9 +280,7 @@ public class WebServer {
                         
                         Thread clientThread = new Thread() {
                             public void run() {
-                                System.out.println("Client Started");
                                 processRequest(client);
-                                System.out.println("Client Stopped");
                             }
                         };
                         clientThread.start();

@@ -20,6 +20,7 @@ public class HTMLBuilder implements PageListener {
     public final String getHTML(Map<String, String> values, METHOD method) {
         
         this.method = method;
+        this.values = values;
         
         String buffer = getDocType();
         buffer += "<html>";
